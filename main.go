@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/mux"
 	"os"
 	"github.com/9ziggy9/go-starter/config"
+  "gorm.io/driver/postgres"
+  "gorm.io/gorm"
 )
 
 type Message struct {
@@ -25,6 +27,12 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error loading port env variable.\n")
 		os.Exit(1)
 	}
+
+	// OPEN DB CONNECTION
+	dsn := "host=localhost " + "user=go_starter " +
+		"password=secret " + "dbname=go_starter_db " + "port=5432 "
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	fmt.Println(db, err)
 
 	// START ROUTER
 	r := mux.NewRouter()
