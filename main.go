@@ -29,11 +29,23 @@ func main() {
 	}
 
 	// OPEN DB CONNECTION
-	dsn := "host=localhost " + "user=go_starter " +
-		"password=secret " + "dbname=go_starter_db " + "port=5432 "
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	fmt.Println(db, err)
+	dsn := config.BuildDSN(
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_PORT"),
+	)
 
+	fmt.Printf("\n\n\n CONNECTING TO DB VIA DSN\n %s\n\n\n", dsn)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening DB connection: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(db)
+	
 	// START ROUTER
 	r := mux.NewRouter()
 

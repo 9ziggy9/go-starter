@@ -26,3 +26,11 @@ func LoadEnv(envPath string) error {
 	}
 	return scanner.Err()
 }
+
+func BuildDSN(user string, db string, pass string, port string) string {
+	return "host=localhost" +
+		" user="+user+
+		" password="+pass+
+		" dbname="+db+
+		" port="+port
+}
