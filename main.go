@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"encoding/json"
 	"net/http"
-	"github.com/gorilla/mux"
 	"os"
-	"github.com/9ziggy9/go-starter/config"
+	"github.com/gorilla/mux"
   "gorm.io/driver/postgres"
   "gorm.io/gorm"
+	"github.com/9ziggy9/go-starter/config"
+	"github.com/9ziggy9/go-starter/schema"
+	"github.com/9ziggy9/go-starter/seeders"
 )
 
 type Message struct {
@@ -36,7 +38,7 @@ func main() {
 		os.Getenv("DB_PORT"),
 	)
 
-	fmt.Printf("\n\n\n CONNECTING TO DB VIA DSN\n %s\n\n\n", dsn)
+	fmt.Printf("\n\nCONNECTING TO DB VIA DSN\n%s\n\n\n", dsn)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -44,7 +46,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(db)
+	db.AutoMigrate(&schema.User{})
+	db.Create(seeders.Users)
 	
 	// START ROUTER
 	r := mux.NewRouter()
