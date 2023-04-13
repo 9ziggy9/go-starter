@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"errors"
 	"github.com/gorilla/mux"
   "gorm.io/driver/postgres"
   "gorm.io/gorm"
@@ -18,6 +19,13 @@ type Message struct {
 }
 
 func main() {
+	// HANDLE CLI ARGS
+	arg, err := processArgs()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
 	// LOAD ENV AND SET PORT
 	if err := config.LoadEnv(".env"); err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading .env file: %s\n", err)
@@ -46,8 +54,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	db.AutoMigrate(&schema.User{})
-	db.Create(seeders.Users)
+	switch arg {
+	case "seed":
+		db.AutoMigrate(&schema.User{})
+		db.Create(seeders.Users)
+	case "purge":
+		db.Migrator().DropTable(&schema.User{})
+		fallthrough
+	default:
+		db.AutoMigrate(&schema.User{})
+	}
 	
 	// START ROUTER
 	r := mux.NewRouter()
@@ -72,4 +88,27 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(message); err != nil {
 		fmt.Fprintf(os.Stderr, "Error encoding JSON: %s\n", err)
 	}
+}
+
+func processArgs() (string, error) {
+	args := os.Args
+
+	if len(args) == 1 {
+		return "", nil
+	}
+
+	if len(args) > 2 {
+		fmt.Fprintf(os.Stderr, "Warning: user supplied too many CLI args.\n")
+		fmt.Println("API will only use the first provided.")
+	}
+
+	arg := args[1]
+
+	validArgs := [2]string{"seed", "purge"}
+	for _, validArg := range validArgs {
+		if arg == validArg {
+			return arg, nil
+		}
+	}
+	return "", errors.New(fmt.Sprintf("Invalid arg provided -- %s\n", arg))
 }
