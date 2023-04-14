@@ -1,22 +1,18 @@
 package main
 
+// WARNING: gorilla is in archived now and no longer maintained!
+// TODO: csrf protection via gorilla seems slightly suss, research pls.
+// I should probably switch to gin immediately.
 import (
 	"fmt"
-	"encoding/json"
-	"net/http"
 	"os"
 	"errors"
-	"github.com/gorilla/mux"
   "gorm.io/driver/postgres"
   "gorm.io/gorm"
 	"github.com/9ziggy9/go-starter/config"
 	"github.com/9ziggy9/go-starter/schema"
 	"github.com/9ziggy9/go-starter/seeders"
 )
-
-type Message struct {
-	Text string `json:"text"`
-}
 
 func main() {
 	// HANDLE CLI ARGS
@@ -54,6 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// TODO: replace with long opts
 	switch arg {
 	case "seed":
 		db.AutoMigrate(&schema.User{})
@@ -63,30 +60,6 @@ func main() {
 		fallthrough
 	default:
 		db.AutoMigrate(&schema.User{})
-	}
-	
-	// START ROUTER
-	r := mux.NewRouter()
-
-	// ENDPOINTS
-	r.HandleFunc("/api/message", messageHandler).Methods(http.MethodGet)
-
-	// LISTEN AND SERVE
-	fmt.Println("Opening port at "+port+" and listening...")
-	if err := http.ListenAndServe(":"+port, r); err != nil {
-		fmt.Fprintf(os.Stderr, "Error starting server: %s\n", err)
-		os.Exit(1)
-	}
-}
-
-func messageHandler(w http.ResponseWriter, r *http.Request) {
-	message := Message{
-		Text: "Hello, World!",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(message); err != nil {
-		fmt.Fprintf(os.Stderr, "Error encoding JSON: %s\n", err)
 	}
 }
 
