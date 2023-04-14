@@ -37,6 +37,7 @@ func main() {
 	}
 
 	// OPEN DB CONNECTION
+	// Generalize to also take host in the future.
 	dsn := config.BuildDSN(
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_NAME"),
@@ -65,8 +66,9 @@ func main() {
 	}
 
 	r := gin.Default()
+	api := r.Group("/api")
 
-	r.GET("/", func(c *gin.Context) {
+	api.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello, World!")
 	})
 

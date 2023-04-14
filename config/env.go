@@ -27,6 +27,7 @@ func LoadEnv(envPath string) error {
 	return scanner.Err()
 }
 
+// Generalize to also take host in the future.
 func BuildDSN(user string, db string, pass string, port string) string {
 	return "host=localhost" +
 		" user="+user+
