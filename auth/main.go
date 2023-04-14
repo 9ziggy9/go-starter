@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"time"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -72,9 +73,13 @@ func GenerateAuth(
 			// - "query:<name>"
 			// - "cookie:<name>"
 			// - "param:<name>"
-		TokenLookup: "header:Authorization",
+		TokenLookup: "header:Authorization, query:token, cookie: jwt",
 		// TokenHeadName is a string in the header. Default value is "Bearer"
 		TokenHeadName: "Bearer",
 		TimeFunc: time.Now,
+
+		SendCookie: true,
+		SecureCookie: false, // MAKE THIS DEV/PROD DEPENDENT, false for dev
+		CookieSameSite: http.SameSiteDefaultMode,
 	})
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/9ziggy9/go-starter/schema"
 	"github.com/9ziggy9/go-starter/seeders"
 	"github.com/9ziggy9/go-starter/auth"
-	"net/http"
 	"github.com/gin-gonic/gin"
 	jwt "github.com/appleboy/gin-jwt/v2"
 )
@@ -71,7 +70,7 @@ func main() {
 	api := r.Group("/api")
 
 	// Configure authorization middleware
-	authMiddleware, err := auth.GenerateAuth("id", "super_secret")
+	authMiddleware, err := auth.GenerateAuth("id", "secretkey")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "JWT ERROR: %s\n", err.Error())
 		os.Exit(1)
@@ -81,22 +80,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
+	api.POST("/login", authMiddleware.LoginHandler)
+
+	r.NoRoute(func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		fmt.Printf("NoRoute claims: %#v\n", claims)
 		c.JSON(404, gin.H{
-			"code": "PAGE_NOT_FOUND",
+			"code": 404,
 			"message": "Page not found",
 		})
 	})
 
-	api.POST("/login", authMiddleware.LoginHandler)
-
 	// AUTH PROTECTED ROUTES
+	api.GET("/refresh_token", authMiddleware.RefreshHandler)
 	api.Use(authMiddleware.MiddlewareFunc())
 	{
 		api.GET("/", func(c *gin.Context) {
-			c.String(http.StatusOK, "Hello, World!")
+			claims := jwt.ExtractClaims(c)
+			c.JSON(200, gin.H{
+				"userID": claims["id"],
+				"text": "Hello, World!",
+			})
 		})
 	}
 
