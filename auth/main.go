@@ -80,6 +80,7 @@ func GenerateAuth(
 
 		SendCookie: true,
 		SecureCookie: false, // MAKE THIS DEV/PROD DEPENDENT, false for dev
+		CookieDomain: "localhost:9001", // Pull from .env in future
 		CookieSameSite: http.SameSiteDefaultMode,
 	})
 }

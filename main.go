@@ -81,6 +81,7 @@ func main() {
 	}
 
 	api.POST("/login", authMiddleware.LoginHandler)
+	api.GET("/logout", authMiddleware.LogoutHandler)
 
 	r.NoRoute(func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
