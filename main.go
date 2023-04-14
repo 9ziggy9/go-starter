@@ -12,8 +12,10 @@ import (
 	"github.com/9ziggy9/go-starter/config"
 	"github.com/9ziggy9/go-starter/schema"
 	"github.com/9ziggy9/go-starter/seeders"
+	"github.com/9ziggy9/go-starter/auth"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/appleboy/gin-jwt/v2"
 )
 
 func main() {
@@ -68,9 +70,35 @@ func main() {
 	r := gin.Default()
 	api := r.Group("/api")
 
-	api.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello, World!")
+	// Configure authorization middleware
+	authMiddleware, err := auth.GenerateAuth("id", "super_secret")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "JWT ERROR: %s\n", err.Error())
+		os.Exit(1)
+	}
+	if errInit := authMiddleware.MiddlewareInit(); errInit != nil {
+		fmt.Fprintf(os.Stderr, "MiddlewareInit() error: %s\n", errInit.Error())
+		os.Exit(1)
+	}
+
+	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
+		claims := jwt.ExtractClaims(c)
+		fmt.Printf("NoRoute claims: %#v\n", claims)
+		c.JSON(404, gin.H{
+			"code": "PAGE_NOT_FOUND",
+			"message": "Page not found",
+		})
 	})
+
+	api.POST("/login", authMiddleware.LoginHandler)
+
+	// AUTH PROTECTED ROUTES
+	api.Use(authMiddleware.MiddlewareFunc())
+	{
+		api.GET("/", func(c *gin.Context) {
+			c.String(http.StatusOK, "Hello, World!")
+		})
+	}
 
 	fmt.Printf("Attempting to listen on port %s...\n", port)
 	if err := r.Run(":"+port); err != nil {
