@@ -18,6 +18,7 @@ type User struct {
   LastName  string
 }
 
+// DOCUMENTATION: https://github.com/appleboy/gin-jwt
 func GenerateAuth(
 	identityKey string,
 	secretKey string,
@@ -78,8 +79,10 @@ func GenerateAuth(
 		TokenHeadName: "Bearer",
 		TimeFunc: time.Now,
 
+		// TODO: fix these issues
 		SendCookie: true,
 		SecureCookie: false, // MAKE THIS DEV/PROD DEPENDENT, false for dev
+		CookieHTTPOnly: true,
 		CookieDomain: "localhost:9001", // Pull from .env in future
 		CookieSameSite: http.SameSiteDefaultMode,
 	})

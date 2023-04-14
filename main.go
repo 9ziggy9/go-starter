@@ -1,8 +1,5 @@
 package main
 
-// WARNING: gorilla is in archived now and no longer maintained!
-// TODO: csrf protection via gorilla seems slightly suss, research pls.
-// I should probably switch to gin immediately.
 import (
 	"fmt"
 	"os"
