@@ -12,6 +12,8 @@ import (
 	"github.com/9ziggy9/go-starter/config"
 	"github.com/9ziggy9/go-starter/schema"
 	"github.com/9ziggy9/go-starter/seeders"
+	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -60,6 +62,18 @@ func main() {
 		fallthrough
 	default:
 		db.AutoMigrate(&schema.User{})
+	}
+
+	r := gin.Default()
+
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Hello, World!")
+	})
+
+	fmt.Printf("Attempting to listen on port %s...\n", port)
+	if err := r.Run(":"+port); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to start server: %s\n", err)
+		os.Exit(1)
 	}
 }
 
