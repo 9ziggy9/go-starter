@@ -16,25 +16,26 @@ type User struct {
 	Name			 string
 	Password	 string
 }
-func (*User) ComparePassword(pass string) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(User.Password), []byte(pass))
+
+func (u *User) ComparePassword(pass string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pass))
 	if err != nil {
 		return errors.New(fmt.Sprintf("Login failure detected for userID/name %s/%s\n",
-			User.ID,
-			User.Name,
+			u.ID,
+			u.Name,
 		))
 	}
 	return nil
 }
 
-func NewUser(name string, pass string) User {
+func NewUser(name string, pass string) *User {
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failure in password hash: %s\n", err)
 		return nil
 	}
-	return User{
+	return &User{
 		Name: name,
-		Password: hashedPass,
+		Password: string(hashedPass),
 	}
 }

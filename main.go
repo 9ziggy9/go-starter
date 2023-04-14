@@ -58,7 +58,7 @@ func main() {
 		db.Create(seeders.Users)
 	case "purge":
 		db.Migrator().DropTable(&schema.User{})
-		fallthrough
+		os.Exit(0)
 	default:
 		db.AutoMigrate(&schema.User{})
 	}
